@@ -10,17 +10,25 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
+
+var ntfyAddr string
 
 func main() {
 
 	defaultPort := "9090"
+	defaultNtfyAddr := ""
 	port := flag.String("port", defaultPort, "HTTP server port")
+	flag.StringVar(&ntfyAddr, "ntfyAddr", defaultNtfyAddr, "ntfy address")
 	flag.Parse()
 
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		*port = envPort
+	}
+	if envNtfyAddr := os.Getenv("NTFYADDR"); envNtfyAddr != "" {
+		ntfyAddr = envNtfyAddr
 	}
 
 	http.HandleFunc("/postq", pushData)
@@ -35,7 +43,7 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	log.Println("Starting server on port " + *port)
+	log.Println("Starting server on port " + *port + ", ntfy address: " + ntfyAddr)
 
 	err := s.ListenAndServe()
 	if err != nil {
@@ -58,7 +66,7 @@ func pushData(w http.ResponseWriter, r *http.Request) {
 		log.Println(err, r.Body)
 	}
 	DBKey := reqdata.Key
-
+	syncNtfy(reqdata.Value)
 	buf := new(bytes.Buffer)
 	//gob编码
 	enc := gob.NewEncoder(buf)
@@ -142,4 +150,11 @@ func readDB(k string) []byte {
 		log.Println(err, k)
 	}
 	return value
+}
+
+func syncNtfy(m string) {
+	req, _ := http.NewRequest("POST", ntfyAddr,
+		strings.NewReader(m))
+	req.Header.Set("Title", "from clipboard_share")
+	http.DefaultClient.Do(req)
 }
