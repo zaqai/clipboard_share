@@ -1,6 +1,9 @@
 # clipboard_share
 A self-hosted clipboard share tool across your devices
+## use bowser UI
+push: http://127.0.0.1:9090/idxq
 
+pull: http://127.0.0.1:9090/your_key
 ## use api
 ### push
 ```python
@@ -23,4 +26,15 @@ response = requests.post('http://127.0.0.1:9090/postq',headers=headers, data=dat
 ```python
 requests.get('http://127.0.0.1:9090/your_key').text
 ```
-or you can get the msg throw your browser: http://127.0.0.1:9090/your_key
+
+## additional features
+> Highly customizable, maybe only suitable for me
+
+When pushing messages, it can push msg to other platforms like ntfy, weixin through http request.
+All you need to do is specify the url.
+- use startup parameter(recommended)
+  clipboardshare -port 29090 -ntfyAddr  https://ntfy.sh/your_topic -WXAddr http://192.168.1.55:3002/webhook/msg/v2
+- env parameter
+  PORT NTFYADDR WXADDR
+
+for more information about weixin push, you can refer https://github.com/danni-cool/wechatbot-webhook
