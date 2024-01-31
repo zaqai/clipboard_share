@@ -15,13 +15,16 @@ import (
 )
 
 var ntfyAddr string
+var WXAddr string
 
 func main() {
 
 	defaultPort := "9090"
 	defaultNtfyAddr := ""
+	defaultWXAddr := ""
 	port := flag.String("port", defaultPort, "HTTP server port")
 	flag.StringVar(&ntfyAddr, "ntfyAddr", defaultNtfyAddr, "ntfy address")
+	flag.StringVar(&WXAddr, "WXAddr", defaultWXAddr, "wx address")
 	flag.Parse()
 
 	if envPort := os.Getenv("PORT"); envPort != "" {
@@ -29,6 +32,9 @@ func main() {
 	}
 	if envNtfyAddr := os.Getenv("NTFYADDR"); envNtfyAddr != "" {
 		ntfyAddr = envNtfyAddr
+	}
+	if envWXAddr := os.Getenv("WXADDR"); envWXAddr != "" {
+		WXAddr = envWXAddr
 	}
 
 	http.HandleFunc("/postq", pushData)
@@ -43,7 +49,7 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	log.Println("Starting server on port " + *port + ", ntfy address: " + ntfyAddr)
+	log.Println("Starting server on port " + *port + ", ntfy address: " + ntfyAddr + ", wx address: " + WXAddr)
 
 	err := s.ListenAndServe()
 	if err != nil {
@@ -67,6 +73,7 @@ func pushData(w http.ResponseWriter, r *http.Request) {
 	}
 	DBKey := reqdata.Key
 	syncNtfy(reqdata.Value)
+	syncWX(reqdata.Value)
 	buf := new(bytes.Buffer)
 	//gob编码
 	enc := gob.NewEncoder(buf)
@@ -153,8 +160,14 @@ func readDB(k string) []byte {
 }
 
 func syncNtfy(m string) {
-	req, _ := http.NewRequest("POST", ntfyAddr,
-		strings.NewReader(m))
+	req, _ := http.NewRequest("POST", ntfyAddr, strings.NewReader(m))
 	req.Header.Set("Title", "from clipboard_share")
+	http.DefaultClient.Do(req)
+}
+func syncWX(m string) {
+	jsonData := fmt.Sprintf(`{"to": "sunny", "data": {"content": "copy: %s"}}`, m)
+	print(jsonData)
+	req, _ := http.NewRequest("POST", WXAddr, bytes.NewBufferString(jsonData))
+	req.Header.Set("Content-Type", "application/json")
 	http.DefaultClient.Do(req)
 }
