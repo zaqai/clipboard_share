@@ -97,6 +97,10 @@ func pushData(w http.ResponseWriter, r *http.Request) {
 func pullData(w http.ResponseWriter, r *http.Request) {
 
 	DBKey := r.URL.Path[1:]
+	if DBKey == "" {
+            http.Error(w, "Key cannot be empty", http.StatusBadRequest)
+            return
+        }
 	DBValueByte := readDB(DBKey)
 	dec := gob.NewDecoder(bytes.NewBuffer(DBValueByte))
 	var DBValue ReqData
