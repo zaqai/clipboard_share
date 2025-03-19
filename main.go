@@ -44,7 +44,7 @@ func main() {
 	http.HandleFunc("/", pullData)
 
 	s := &http.Server{
-		Addr:           ":" + *port,
+		Addr:           "[::]:" + *port,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
