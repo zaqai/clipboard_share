@@ -44,7 +44,7 @@ func main() {
 	http.HandleFunc("/", pullData)
 
 	s := &http.Server{
-		Addr:           "[::]:" + *port,
+		Addr:           ":" + *port,  // 改为监听所有接口
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
