@@ -40,7 +40,7 @@ jobs:
       - uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }} # 记得在 secrets 中添加响应的 secret
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: make
       - uses: docker/build-push-action@v3
         with:
