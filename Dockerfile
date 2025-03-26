@@ -1,8 +1,7 @@
 FROM alpine:3.15.5
 ARG TARGETOS
 ARG TARGETARCH
-COPY build/clipboardshare_${TARGETOS}_${TARGETARCH} /usr/local/bin/clipboardshare
-RUN chmod +x /usr/local/bin/clipboardshare
-COPY --from=builder /clipboardshare /app/clipboardshare
-# 复制配置文件等（确保index.html存在于构建上下文）
-COPY index.html ./  
+COPY build/clipboardshare_${TARGETOS}_${TARGETARCH} /app/clipboardshare
+RUN chmod +x /app/clipboardshare
+COPY index.html /app/index.html
+CMD ["/app/clipboardshare"]  # 添加默认启动命令
